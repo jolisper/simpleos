@@ -1,13 +1,14 @@
 ASM=nasm
 SRC=src
-OUTDIR=build
+OUTDIR=../build/x86_64
+BOOT_SECTOR_SRC=boot_sector-addressing.asm
 
 .PHONY: all outdir clean
 
 all: outdir boot_sector.bin
 
-boot_sector.bin: $(SRC)/boot_sector.asm
-	$(ASM) $(SRC)/boot_sector.asm -f bin -o $(OUTDIR)/boot_sector.bin
+boot_sector.bin: $(SRC)/$(BOOT_SECTOR_SRC)
+	$(ASM) $(SRC)/$(BOOT_SECTOR_SRC) -f bin -o $(OUTDIR)/boot_sector.bin
 
 outdir:
 	mkdir -p $(OUTDIR)
