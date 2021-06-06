@@ -1,5 +1,7 @@
 ; A simple boot sector that demostrates addressing.
 
+[org 0x7c00]                    ; Tell the assembler where this code will be loaded
+
     mov ah, 0x0e                ; int 10/ah = 0eh -> scrolling teletype BIOS routine
 
     ; First attempt
