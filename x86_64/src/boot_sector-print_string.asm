@@ -10,6 +10,9 @@
     mov bx, GOODBYE_STRING
     call print_string
 
+    mov dx, 0x1fb6                  ; Use DX as a parameter to print hex function
+    call print_hex
+
     jmp $                           ; Hang
 
 %include "src/lib/print_string.asm"
