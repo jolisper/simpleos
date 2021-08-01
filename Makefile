@@ -1,16 +1,24 @@
 BUILD_DIR=build
 X86_64_DIR=x86_64
 
-.PHONY: all run clean hex
+.PHONY: all outdir run clean hex
 
-all:
-	make -C $(X86_64_DIR)/
+all: outdir boot.bin
+
+boot.bin: boot.asm
+	nasm -f bin ./boot.asm -o $(BUILD_DIR)/boot.bin
+
+outdir:
+	mkdir -p build
 
 clean:
-	make -C $(X86_64_DIR)/ clean
+	rm -rf $(BUILD_DIR)
 
 hex:
-	od -t x1 -A n $(BUILD_DIR)/$(X86_64_DIR)/boot_sector.bin
+	od -t x1 -A n $(BUILD_DIR)/boot.bin
+
+disasm:
+	ndisasm $(BUILD_DIR)/boot.bin
 
 run:
-	qemu-system-x86_64 -drive file=$(BUILD_DIR)/$(X86_64_DIR)/os-image,format=raw
+	qemu-system-x86_64 -drive file=$(BUILD_DIR)/boot.bin,format=raw
