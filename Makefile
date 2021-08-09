@@ -7,6 +7,8 @@ all: outdir boot.bin
 
 boot.bin: boot.asm
 	nasm -f bin ./boot.asm -o $(BUILD_DIR)/boot.bin
+	dd if=./message.txt >> $(BUILD_DIR)/boot.bin
+	dd if=/dev/zero bs=512 count=1 >> $(BUILD_DIR)/boot.bin
 
 outdir:
 	mkdir -p build

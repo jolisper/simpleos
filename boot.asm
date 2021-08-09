@@ -40,13 +40,27 @@ start:
 
     sti                 ; Enables interrupts 
 
-    ; Prints a welcome message:    
-    call print_message
+    call load_buffer_from_disk
 
-    jmp $               ; Hangs
+    mov si, buffer
+    call print
 
-print_message:
-    mov si, message
+   jmp $               ; Hangs
+
+load_buffer_from_disk:
+    mov ah, 2           ; read sector command
+    mov al, 1           ; one sector to read
+    mov ch, 0           ; cylinder low eight bits
+    mov cl, 2           ; read from sector 2
+    mov dh, 0           ; head number 0
+                        ; DL with disk number is already set for BIOS
+                        ; pointing to the same disk of the boot sector.
+    mov bx, buffer      ; ES:BX points to 
+    int 0x13
+    jc .error          ; print error message if any error
+    ret
+.error:
+    mov si, error_message
     call print
     ret
 
@@ -66,8 +80,10 @@ print_char:
     int 0x10
     ret
 
-message: db 'Hello World!', 0
+error_message: db 'Failed to laod sector', 0
 
 ; Bootsector padding
 times 510-($-$$) db 0
 dw 0xaa55
+
+buffer:
