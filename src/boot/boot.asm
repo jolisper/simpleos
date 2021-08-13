@@ -92,6 +92,11 @@ load32:
     mov ebp, 0x00200000
     mov esp, ebp
 
+    ; Enable A20 address line; https://wiki.osdev.org/A20_Line
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+
     jmp $               ; Hangs
 
 ; Bootsector padding
