@@ -1,26 +1,27 @@
+SRC_DIR=src
 BUILD_DIR=build
+BIN_DIR=bin
 X86_64_DIR=x86_64
 
 .PHONY: all outdir run clean hex
 
 all: outdir boot.bin
 
-boot.bin: boot.asm
-	nasm -f bin ./boot.asm -o $(BUILD_DIR)/boot.bin
-	dd if=./message.txt >> $(BUILD_DIR)/boot.bin
-	dd if=/dev/zero bs=512 count=1 >> $(BUILD_DIR)/boot.bin
+boot.bin: src/boot/boot.asm
+	nasm -f bin $(SRC_DIR)/boot/boot.asm -o $(BIN_DIR)/boot.bin
 
 outdir:
-	mkdir -p build
+	mkdir -p $(BUILD_DIR) 
+	mkdir -p $(BIN_DIR) 
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR); rm -rf $(BIN_DIR)
 
 hex:
-	od -t x1 -A n $(BUILD_DIR)/boot.bin
+	od -t x1 -A n $(BIN_DIR)/boot.bin
 
 disasm:
-	ndisasm $(BUILD_DIR)/boot.bin
+	ndisasm $(BIN_DIR)/boot.bin
 
 run:
-	qemu-system-x86_64 -drive file=$(BUILD_DIR)/boot.bin,format=raw
+	qemu-system-x86_64 -drive file=$(BIN_DIR)/boot.bin,format=raw
