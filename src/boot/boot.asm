@@ -50,7 +50,7 @@ start:
     or eax, 0x1
     mov cr0, eax
 
-    jmp CODE_SEGMENT:load32
+    jmp CODE_SEGMENT:load_kernel
 
 ; GDT
 ; The Global Descriptor Table tells to the CPU about memory segments. We are using
@@ -80,24 +80,73 @@ gdt_descriptor:
     dd gdt_start
 
 [bits 32]
-load32:
-    mov ax, DATA_SEGMENT
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+load_kernel:
+    mov eax, 1                  ; Initial sector
+    mov ecx, 100                ; Total sectors to read
+    mov edi, 0x100000           ; Memory address to load sectors
+    call ata_lba_read
 
-    ; Set the stack
-    mov ebp, 0x00200000
-    mov esp, ebp
+    jmp CODE_SEGMENT:0x0100000  ; Jump to kernel loaded at 1M into memory
 
-    ; Enable A20 address line; https://wiki.osdev.org/A20_Line
-    in al, 0x92
-    or al, 2
-    out 0x92, al
+ata_lba_read:
+    mov ebx, eax        ; Backup the LBA
+    ; Send the highgest 8 bits of the lba to hard disk controller
+    shr eax, 24         
+    or eax, 0xe0        ; Seled the master drive
+    mov dx, 0x1f6       ; Port
+    out dx, al
+    ; Finished sending the highest 8 bits of the lba
 
-    jmp $               ; Hangs
+    ; Send the total sectors to read
+    mov eax, ecx
+    mov dx, 0x1f2
+    out dx, al
+    ; Finished the total sectors to read
+
+    ; Send more bits of the LBA
+    mov eax, ebx        ; Restore the backup LBA
+    mov dx, 0x1f3
+    out dx, al
+    ; Finished sending more bits of the LBA
+
+    ; Send more bits of the LBA 
+    mov dx, 0x1f4
+    mov eax, ebx
+    shr eax, 8
+    out dx, al 
+    ; Finished sending more bis of the LBA
+    
+    ; Send upper 16 bits of the LBA 
+    mov dx, 0x1f5
+    mov eax, ebx,       ; Restore the backup LBA 
+    shr eax, 16
+    out dx, al
+    ; Finished sending upper 16 bits of the LBA
+
+    mov dx, 0x1f7
+    mov al, 0x20
+    out dx, al
+
+    ; Read al sectors into memory
+.next_sector:
+    push ecx
+
+; Checking if we need to read
+.try_again
+    mov dx, 0x1f7
+    in al, dx
+    test al, 8
+    jz .try_again
+
+; We need to read 256 words at a time
+    mov ecx, 256
+    mov dx, 0x1f0
+    rep insw            ; Input (E)CX words from port DX into ES:[(E)DI]
+    pop ecx
+    loop .next_sector   ; Decrement ECX before jump
+
+    ; End of reading sectors into memory
+    ret
 
 ; Bootsector padding
 times 510-($-$$) db 0
