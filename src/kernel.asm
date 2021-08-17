@@ -22,3 +22,8 @@ _start:
     out 0x92, al
 
     jmp $               ; Hangs
+
+    ; The code in this file must be the first to run when the bootloader jump to 0x0100000,
+    ; to avoid aligment issues when we mixup unaligned asm code with 16-bits aligned C code,
+    ; we complete the sector with zeroes, so, 512 mod 16 = 0, so is 16-bit aligned like C code.
+    times 512-($-$$) db 0
