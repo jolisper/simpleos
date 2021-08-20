@@ -132,7 +132,7 @@ ata_lba_read:
     push ecx
 
 ; Checking if we need to read
-.try_again
+.try_again:
     mov dx, 0x1f7
     in al, dx
     test al, 8

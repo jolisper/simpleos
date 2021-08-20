@@ -1,5 +1,6 @@
 [bits 32]
 global _start
+extern kernel_main
 
 CODE_SEGMENT equ 0x8
 DATA_SEGMENT equ 0x10
@@ -20,6 +21,8 @@ _start:
     in al, 0x92
     or al, 2
     out 0x92, al
+
+    call kernel_main
 
     jmp $               ; Hangs
 
