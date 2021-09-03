@@ -2,7 +2,7 @@ SRC_DIR=src
 BUILD_DIR=build
 BIN_DIR=bin
 X86_64_DIR=x86_64
-FILES = $(BUILD_DIR)/kernel.asm.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/idt/idt.asm.o $(BUILD_DIR)/idt/idt.o $(BUILD_DIR)/memory/memory.o
+FILES = $(BUILD_DIR)/kernel.asm.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/idt/idt.asm.o $(BUILD_DIR)/idt/idt.o $(BUILD_DIR)/memory/memory.o $(BUILD_DIR)/io/io.asm.o
 INCLUDES=-I./src
 FLAGS=-g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -fno-builtin -Wno-unused-function -Werror -Wno-unused-label -Wno-unused-parameter -Wno-cpp -Wall -nostdlib -nostartfiles -nodefaultlibs -O0 -Iinc 
 
@@ -36,10 +36,14 @@ $(BUILD_DIR)/idt/idt.o: $(SRC_DIR)/idt/idt.c
 $(BUILD_DIR)/memory/memory.o: $(SRC_DIR)/memory/memory.c
 	i686-elf-gcc $(INCLUDES) -I$(SRC_DIR)/memory $(FLAGS) -std=gnu99 -c $(SRC_DIR)/memory/memory.c -o $(BUILD_DIR)/memory/memory.o
 
+$(BUILD_DIR)/io/io.asm.o: $(SRC_DIR)/io/io.asm
+	nasm -f elf -g $(SRC_DIR)/io/io.asm -o $(BUILD_DIR)/io/io.asm.o
+
 outdir:
 	mkdir -p $(BUILD_DIR) 
 	mkdir -p $(BUILD_DIR)/idt 
 	mkdir -p $(BUILD_DIR)/memory 
+	mkdir -p $(BUILD_DIR)/io
 	mkdir -p $(BIN_DIR) 
 
 clean:
